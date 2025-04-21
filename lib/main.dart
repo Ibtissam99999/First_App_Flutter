@@ -10,79 +10,137 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Mon Application Flutter",
+      title: 'Mon Application Flutter',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
         useMaterial3: true,
       ),
-      home: const HomePage(title: "Page d'accueil Flutter"),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const MyHomePage(title: 'Page d\'accueil Flutter'),
+        '/profile': (context) => const ProfilePage(),
+        '/settings': (context) => const SettingsPage(),
+        '/help': (context) => const HelpPage(),
+      },
     );
   }
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
   final String title;
 
   @override
-  State<HomePage> createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<HomePage> {
+class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _nomController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
-  String _genre = 'Homme'; 
-  bool _codage = false; 
-  bool _design = false; 
-  bool _gaming = false; 
-  DateTime _selectedDate = DateTime.now(); 
+
+  String _genre = 'Homme';
+  bool _codage = false;
+  bool _design = false;
+  bool _gaming = false;
+  DateTime _selectedDate = DateTime.now();
   double _competenceLevel = 1.0;
   String _formation = 'Informatique';
-  bool _notifications = false; 
+  bool _notifications = false;
 
-  Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker( 
-      context: context, 
-      initialDate: _selectedDate, 
-      firstDate: DateTime(1900), 
-      lastDate: DateTime.now(),
-    ); 
-    if (picked != null && picked != _selectedDate) { 
-      setState(() { 
-        _selectedDate = picked; 
-      }); 
-    } 
+  @override
+  void dispose() {
+    _nomController.dispose();
+    _ageController.dispose();
+    super.dispose();
   }
 
-  void _showProfile(BuildContext context) {
-    // Récupération des informations
-    String nom = _nomController.text;
-    String age = _ageController.text;
-    
-    // Création du message 
-    String message = 'Profil : $nom, $age ans, $_genre\n'; 
-    message += 'Formation : $_formation\n'; 
-    message += 'Date de naissance : ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}\n'; 
-    message += 'Niveau : ${_competenceLevel.round()}/5\n'; 
-    message += 'Intérêts : '; 
-    if (_codage) message += 'Codage, '; 
-    if (_design) message += 'Design, '; 
-    if (_gaming) message += 'Jeux vidéo, '; 
-    
-    // Affichage du résultat 
-    showDialog( 
-      context: context, 
-      builder: (context) => AlertDialog( 
-        title: Text('Profil complet'), 
-        content: Text(message), 
-        actions: [ 
-          TextButton( 
-            onPressed: () => Navigator.pop(context), 
-            child: Text('Fermer'), 
-          ), 
-        ], 
-      ), 
-    ); 
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
+  Widget _buildDrawer(BuildContext context) {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration:
+                BoxDecoration(color: Theme.of(context).colorScheme.primary),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person,
+                      size: 40,
+                      color: Theme.of(context).colorScheme.primary),
+                ),
+                SizedBox(height: 10),
+                Text('Menu de Navigation',
+                    style: TextStyle(color: Colors.white, fontSize: 24)),
+                Text('Application Flutter',
+                    style: TextStyle(color: Colors.white70, fontSize: 16)),
+              ],
+            ),
+          ),
+          ListTile(
+            leading: Icon(Icons.home),
+            title: Text('Accueil'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.person),
+            title: Text('Profil'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/profile');
+            },
+          ),
+          Divider(),
+          ListTile(
+            leading: Icon(Icons.settings),
+            title: Text('Paramètres'),
+            trailing: Icon(Icons.arrow_forward_ios),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/settings');
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.help),
+            title: Text('Aide'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, '/help');
+            },
+          ),
+          Divider(),
+          ListTile(
+            leading: Icon(Icons.logout, color: Colors.red),
+            title: Text('Déconnexion',
+                style: TextStyle(color: Colors.red)),
+            onTap: () {
+              Navigator.pop(context);
+              // Action de déconnexion ici
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -92,16 +150,14 @@ class _MyHomePageState extends State<HomePage> {
         title: Text(widget.title),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: Padding(
+      drawer: _buildDrawer(context),
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Entrez votre nom :',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
+            Text('Entrez votre nom :',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             TextField(
               controller: _nomController,
               decoration: InputDecoration(
@@ -110,11 +166,8 @@ class _MyHomePageState extends State<HomePage> {
               ),
             ),
             SizedBox(height: 16),
-            Text(
-              'Entrez votre âge :',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 8),
+            Text('Entrez votre âge :',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             TextField(
               controller: _ageController,
               decoration: InputDecoration(
@@ -124,80 +177,49 @@ class _MyHomePageState extends State<HomePage> {
               keyboardType: TextInputType.number,
             ),
             SizedBox(height: 16),
-            Text(
-              'Genre :',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            Text('Genre :',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Row(
               children: [
                 Radio<String>(
                   value: 'Homme',
                   groupValue: _genre,
-                  onChanged: (String? value) {
-                    setState(() {
-                      _genre = value!;
-                    });
-                  },
+                  onChanged: (value) => setState(() => _genre = value!),
                 ),
                 Text('Homme'),
-                SizedBox(width: 20),
                 Radio<String>(
                   value: 'Femme',
                   groupValue: _genre,
-                  onChanged: (String? value) {
-                    setState(() {
-                      _genre = value!;
-                    });
-                  },
+                  onChanged: (value) => setState(() => _genre = value!),
                 ),
                 Text('Femme'),
               ],
             ),
             SizedBox(height: 16),
-            Text(
-              'Centres d\'intérêt :',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            Text('Centres d\'intérêt :',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             CheckboxListTile(
               title: Text('Codage'),
               value: _codage,
-              onChanged: (bool? value) {
-                setState(() {
-                  _codage = value!;
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
+              onChanged: (value) => setState(() => _codage = value!),
             ),
             CheckboxListTile(
               title: Text('Design'),
               value: _design,
-              onChanged: (bool? value) {
-                setState(() {
-                  _design = value!;
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
+              onChanged: (value) => setState(() => _design = value!),
             ),
             CheckboxListTile(
               title: Text('Jeux vidéo'),
               value: _gaming,
-              onChanged: (bool? value) {
-                setState(() {
-                  _gaming = value!;
-                });
-              },
-              controlAffinity: ListTileControlAffinity.leading,
+              onChanged: (value) => setState(() => _gaming = value!),
             ),
             SizedBox(height: 16),
-            Text(
-              'Date de naissance :',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            Text('Date de naissance :',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Row(
               children: [
                 Text(
-                  "${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}",
-                ),
+                    '${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}'),
                 Spacer(),
                 ElevatedButton(
                   onPressed: () => _selectDate(context),
@@ -206,10 +228,8 @@ class _MyHomePageState extends State<HomePage> {
               ],
             ),
             SizedBox(height: 16),
-            Text(
-              'Niveau en programmation (1-5) :',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            Text('Niveau en programmation (1-5) :',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             Row(
               children: [
                 Text('Débutant'),
@@ -220,51 +240,36 @@ class _MyHomePageState extends State<HomePage> {
                     max: 5.0,
                     divisions: 4,
                     label: _competenceLevel.round().toString(),
-                    onChanged: (double value) {
-                      setState(() {
-                        _competenceLevel = value;
-                      });
-                    },
+                    onChanged: (value) =>
+                        setState(() => _competenceLevel = value),
                   ),
                 ),
                 Text('Expert'),
               ],
             ),
             SizedBox(height: 16),
-            Text(
-              'Formation :',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            Text('Formation :',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             DropdownButton<String>(
               value: _formation,
-              onChanged: (String? newValue) {
-                setState(() {
-                  _formation = newValue!;
-                });
-              },
-              items: <String>['Informatique', 'Design', 'Marketing', 'Gestion']
-                  .map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
+              onChanged: (value) => setState(() => _formation = value!),
+              items: ['Informatique', 'Design', 'Marketing', 'Gestion']
+                  .map((val) => DropdownMenuItem(
+                        value: val,
+                        child: Text(val),
+                      ))
+                  .toList(),
             ),
             SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Recevoir des notifications :',
-                  style: TextStyle(fontSize: 16),
-                ),
+                Text('Recevoir des notifications :',
+                    style: TextStyle(fontSize: 16)),
                 Switch(
                   value: _notifications,
-                  onChanged: (value) {
-                    setState(() {
-                      _notifications = value;
-                    });
-                  },
+                  onChanged: (value) =>
+                      setState(() => _notifications = value),
                 ),
               ],
             ),
@@ -272,7 +277,33 @@ class _MyHomePageState extends State<HomePage> {
             Center(
               child: ElevatedButton(
                 onPressed: () {
-                  _showProfile(context); // Call the method to show profile
+                  String nom = _nomController.text;
+                  String age = _ageController.text;
+
+                  String message =
+                      'Profil : $nom, $age ans, $_genre\nFormation : $_formation\n';
+                  message +=
+                      'Date de naissance : ${_selectedDate.day}/${_selectedDate.month}/${_selectedDate.year}\n';
+                  message += 'Niveau : ${_competenceLevel.round()}/5\n';
+                  message += 'Intérêts : ';
+                  if (_codage) message += 'Codage, ';
+                  if (_design) message += 'Design, ';
+                  if (_gaming) message += 'Jeux vidéo, ';
+                  message += '\nNotifications : ${_notifications ? 'Oui' : 'Non'}';
+
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text('Profil complet'),
+                      content: Text(message),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: Text('Fermer'),
+                        ),
+                      ],
+                    ),
+                  );
                 },
                 child: Text('Valider le formulaire'),
                 style: ElevatedButton.styleFrom(
@@ -282,6 +313,62 @@ class _MyHomePageState extends State<HomePage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// Écran Profil
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Profil')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.person, size: 100),
+            SizedBox(height: 20),
+            Text('Page de Profil', style: TextStyle(fontSize: 24)),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Retour'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Écran Paramètres
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Paramètres')),
+      body: Center(
+        child: Text('Page des Paramètres', style: TextStyle(fontSize: 24)),
+      ),
+    );
+  }
+}
+
+// Écran Aide
+class HelpPage extends StatelessWidget {
+  const HelpPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Aide')),
+      body: Center(
+        child: Text('Page d\'aide', style: TextStyle(fontSize: 24)),
       ),
     );
   }
